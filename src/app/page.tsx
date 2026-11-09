@@ -19,12 +19,18 @@ import {
   Crosshair,
   Sparkles,
   Terminal,
+  ArrowRightLeft,
+  Activity,
+  Layers,
 } from 'lucide-react';
 import { ProductCard } from '@/components/product/ProductCard';
 import { ProductDetailModal } from '@/components/product/ProductDetailModal';
+import { HardwareComparator } from '@/components/interactive/HardwareComparator';
 import { INITIAL_PRODUCTS } from '@/lib/data/catalog';
 import { Product } from '@/lib/types';
 import { useCart } from '@/lib/context/CartContext';
+import { sound } from '@/lib/audio/sound-fx';
+import { TextScramble } from '@/components/ui/TextScramble';
 
 export default function StorefrontPage() {
   const { addToCart } = useCart();
@@ -34,6 +40,7 @@ export default function StorefrontPage() {
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [activeModalProduct, setActiveModalProduct] = useState<Product | null>(null);
+  const [isComparatorOpen, setIsComparatorOpen] = useState<boolean>(false);
 
   // Hero flagship showcase state
   const flagshipProduct = products[0]; // AuraWave Pro ANC
@@ -71,21 +78,56 @@ export default function StorefrontPage() {
   }, [products, selectedCategory, searchQuery, sortBy, inStockOnly]);
 
   const handleFlagshipAdd = () => {
+    sound.playEngage();
     addToCart(flagshipProduct, 1);
     setFlagshipAdded(true);
     setTimeout(() => setFlagshipAdded(false), 2000);
   };
 
+  const handleCategorySelect = (id: string) => {
+    sound.playClick(850);
+    setSelectedCategory(id);
+  };
+
   return (
-    <div className="min-h-screen text-zinc-100 flex flex-col pb-20">
+    <div className="min-h-screen text-zinc-100 flex flex-col pb-20 relative">
+      {/* Avant-Garde Technical Millimeter Scale on Top Left */}
+      <div className="hidden xl:flex fixed left-3 top-28 flex-col items-center gap-2 text-[9px] font-mono text-zinc-600 pointer-events-none select-none z-30">
+        <span>000mm</span>
+        <div className="w-1.5 h-16 border-l border-zinc-800" />
+        <span>050mm</span>
+        <div className="w-1.5 h-16 border-l border-zinc-800" />
+        <span>100mm</span>
+      </div>
+
       {/* ========================================================================= */}
       {/* 1. HERO BENTO SHOWCASE (Industrial Kinetic Showcase)                      */}
       {/* ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 w-full">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-10 w-full">
+        {/* Top Laboratory Bar */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-zinc-500 pb-2 border-b border-zinc-800/80">
+          <div className="flex items-center gap-2">
+            <span className="text-amber-500 font-bold">/// QC_SPEC_LAB</span>
+            <span className="text-zinc-700">&bull;</span>
+            <span>EXPERIMENTATION RUN #094</span>
+          </div>
+
+          <button
+            onClick={() => {
+              sound.playBlip();
+              setIsComparatorOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-zinc-900 hover:bg-amber-500 hover:text-zinc-950 border border-zinc-800 text-zinc-300 font-bold transition-all text-[11px]"
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5" />
+            <span>LAUNCH SPEC COMPARATOR [DIFF_LAB]</span>
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Main Stage Left (Col 8): Flagship Hardware Rig */}
           <div className="lg:col-span-8 bg-zinc-950 border border-zinc-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl flex flex-col justify-between group">
-            {/* Subtle Blueprint Grid Pattern */}
+            {/* Blueprint Grid Pattern */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-50" />
             <div className="absolute -top-32 -left-32 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -114,21 +156,26 @@ export default function StorefrontPage() {
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center my-4">
               <div className="md:col-span-6 space-y-4">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-none uppercase font-mono">
-                  {flagshipProduct.title}
+                  <TextScramble text={flagshipProduct.title} />
                 </h1>
                 <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-md">
                   {flagshipProduct.description}
                 </p>
 
-                {/* Live Spec Telemetry Badges */}
-                <div className="grid grid-cols-2 gap-2 pt-2">
-                  <div className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 font-mono text-xs">
-                    <span className="text-[10px] text-zinc-500 block uppercase">Driver Unit</span>
-                    <span className="font-bold text-zinc-200">40mm Beryllium</span>
+                {/* Acoustic Frequency Waveform simulation */}
+                <div className="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-2">
+                  <div className="flex justify-between text-[10px] font-mono text-zinc-500 uppercase">
+                    <span>Acoustic Frequency Curve</span>
+                    <span className="text-amber-400 font-bold">20Hz - 40kHz</span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 font-mono text-xs">
-                    <span className="text-[10px] text-zinc-500 block uppercase">Battery Reserve</span>
-                    <span className="font-bold text-amber-400">45H Continuous</span>
+                  <div className="flex items-end gap-1 h-6">
+                    {[35, 60, 45, 80, 95, 70, 50, 85, 100, 65, 40, 75, 90, 55, 30].map((h, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 bg-amber-500/80 rounded-t transition-all hover:bg-amber-300"
+                        style={{ height: `${h}%` }}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -143,10 +190,13 @@ export default function StorefrontPage() {
 
                 {/* Thumbnail angle switcher */}
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 bg-zinc-950/80 px-2.5 py-1.5 rounded-full border border-zinc-800 backdrop-blur-md">
-                  {flagshipProduct.images.map((img, idx) => (
+                  {flagshipProduct.images.map((_, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setFlagshipImageIdx(idx)}
+                      onClick={() => {
+                        sound.playClick(900);
+                        setFlagshipImageIdx(idx);
+                      }}
                       className={`w-3 h-3 rounded-full transition-all ${
                         flagshipImageIdx === idx ? 'bg-amber-500 scale-125' : 'bg-zinc-700 hover:bg-zinc-500'
                       }`}
@@ -175,7 +225,10 @@ export default function StorefrontPage() {
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setActiveModalProduct(flagshipProduct)}
+                  onClick={() => {
+                    sound.playClick(700);
+                    setActiveModalProduct(flagshipProduct);
+                  }}
                   className="px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-mono text-xs font-bold border border-zinc-800 transition-colors"
                 >
                   FULL_SPECS
@@ -183,7 +236,7 @@ export default function StorefrontPage() {
 
                 <button
                   onClick={handleFlagshipAdd}
-                  className={`px-6 py-3 rounded-xl font-mono text-xs font-black transition-all flex items-center gap-2 shadow-xl ${
+                  className={`px-6 py-3 rounded-xl font-mono text-xs font-black transition-all flex items-center gap-2 shadow-xl cursor-pointer ${
                     flagshipAdded
                       ? 'bg-emerald-500 text-zinc-950 scale-105'
                       : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 shadow-orange-500/20 hover:scale-[1.02] active:scale-95'
@@ -237,6 +290,7 @@ export default function StorefrontPage() {
               <div className="mt-5 pt-4 border-t border-zinc-800/80 flex items-center justify-between">
                 <Link
                   href="/track"
+                  onClick={() => sound.playClick(900)}
                   className="font-mono text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1.5 transition-colors"
                 >
                   <PackageCheck className="w-4 h-4" />
@@ -244,6 +298,7 @@ export default function StorefrontPage() {
                 </Link>
                 <Link
                   href="/admin"
+                  onClick={() => sound.playClick(900)}
                   className="font-mono text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
                 >
                   DEPOT_SYS
@@ -270,8 +325,11 @@ export default function StorefrontPage() {
                     ${products[2].price.toFixed(2)}
                   </span>
                   <button
-                    onClick={() => setActiveModalProduct(products[2])}
-                    className="font-mono text-[10px] px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors"
+                    onClick={() => {
+                      sound.playClick(750);
+                      setActiveModalProduct(products[2]);
+                    }}
+                    className="font-mono text-[10px] px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors cursor-pointer"
                   >
                     INSPECT
                   </button>
@@ -285,16 +343,16 @@ export default function StorefrontPage() {
       {/* ========================================================================= */}
       {/* 2. TACTICAL FILTER & CONTROL MATRIX                                       */}
       {/* ========================================================================= */}
-      <section id="catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+      <section id="catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full">
         <div className="bg-zinc-950/90 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-            {/* Category Segment Tabs */}
+            {/* Category Segment Tabs with Scramble Effect */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3.5 py-2 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                  onClick={() => handleCategorySelect(cat.id)}
+                  className={`px-3.5 py-2 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                     selectedCategory === cat.id
                       ? 'bg-amber-500 text-zinc-950 shadow-md shadow-orange-500/20'
                       : 'bg-zinc-900/90 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-zinc-800'
@@ -313,7 +371,7 @@ export default function StorefrontPage() {
                 <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="FILTER_QUERY (e.g. 40mm)..."
+                  placeholder="FILTER_QUERY..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs text-white placeholder-zinc-500 outline-none transition-all"
@@ -324,7 +382,10 @@ export default function StorefrontPage() {
               <div className="relative font-mono">
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => {
+                    sound.playClick(600);
+                    setSortBy(e.target.value as any);
+                  }}
                   aria-label="Order sort mode"
                   className="appearance-none bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl px-4 py-2 pr-8 text-xs font-bold text-zinc-300 outline-none cursor-pointer"
                 >
@@ -341,7 +402,10 @@ export default function StorefrontPage() {
                 <input
                   type="checkbox"
                   checked={inStockOnly}
-                  onChange={(e) => setInStockOnly(e.target.checked)}
+                  onChange={(e) => {
+                    sound.playClick(650);
+                    setInStockOnly(e.target.checked);
+                  }}
                   className="rounded border-zinc-700 text-amber-500 focus:ring-amber-400 bg-zinc-950"
                 />
                 IN_STOCK
@@ -362,7 +426,7 @@ export default function StorefrontPage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. PRODUCT CATALOG GRID                                                   */}
+      {/* 3. PRODUCT CATALOG GRID WITH 3D TILT                                      */}
       {/* ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
         {filteredProducts.length > 0 ? (
@@ -381,16 +445,17 @@ export default function StorefrontPage() {
             <h3 className="font-mono text-base font-bold text-white mb-1">
               NULL_SEARCH_RESULTS
             </h3>
-            <p className="text-xs text-zinc-400 max-w-sm mx-auto mb-4">
+            <p className="text-xs text-zinc-400 max-w-sm mx-auto mb-4 font-mono">
               No hardware units matched your exact query parameter. Reset filters to restore default inventory.
             </p>
             <button
               onClick={() => {
+                sound.playClick(800);
                 setSelectedCategory('all');
                 setSearchQuery('');
                 setInStockOnly(false);
               }}
-              className="px-4 py-2 rounded-xl bg-amber-500 text-zinc-950 font-mono font-bold text-xs shadow-md"
+              className="px-4 py-2 rounded-xl bg-amber-500 text-zinc-950 font-mono font-bold text-xs shadow-md cursor-pointer"
             >
               RESTORE_ALL_FILTERS
             </button>
@@ -402,6 +467,13 @@ export default function StorefrontPage() {
       <ProductDetailModal
         product={activeModalProduct}
         onClose={() => setActiveModalProduct(null)}
+      />
+
+      {/* Hardware Benchmark & Comparison Modal */}
+      <HardwareComparator
+        products={products}
+        isOpen={isComparatorOpen}
+        onClose={() => setIsComparatorOpen(false)}
       />
     </div>
   );

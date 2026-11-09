@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Star, ShoppingBag, Eye, Cpu, Zap, Activity, Check } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Star, Eye, Cpu, Zap, Activity, Check } from 'lucide-react';
 import { Product } from '@/lib/types';
 import { useCart } from '@/lib/context/CartContext';
+import { sound } from '@/lib/audio/sound-fx';
+import { TextScramble } from '@/components/ui/TextScramble';
 
 interface ProductCardProps {
   product: Product;
@@ -14,6 +16,34 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
   const { addToCart } = useCart();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isAdded, setIsAdded] = useState(false);
+  const [selectedColorway, setSelectedColorway] = useState<'obsidian' | 'titanium' | 'amber'>('obsidian');
+
+  // 3D Tilt Card Physics state
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [tiltStyle, setTiltStyle] = useState({});
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -6; // max 6deg
+    const rotateY = ((x - centerX) / centerX) * 6;  // max 6deg
+
+    setTiltStyle({
+      transform: `perspective(900px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateZ(8px)`,
+      transition: 'transform 0.1s ease-out',
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTiltStyle({
+      transform: 'perspective(900px) rotateX(0deg) rotateY(0deg) translateZ(0px)',
+      transition: 'transform 0.4s ease-out',
+    });
+  };
 
   const discountPct = product.comparePrice
     ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
@@ -21,38 +51,61 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
+    sound.playEngage();
     addToCart(product, 1);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1400);
   };
 
-  // Extract first 2 specs for quick HUD preview
+  const handleImageSwitch = (idx: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    sound.playClick(950);
+    setActiveImageIndex(idx);
+  };
+
   const firstSpecs = Object.entries(product.specs || {}).slice(0, 2);
 
-  return (
-    <div className="group relative bg-zinc-950/70 border border-zinc-800 hover:border-amber-500/60 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300 flex flex-col justify-between">
-      {/* Corner Tech Brackets (HUD decoration) */}
-      <div className="absolute top-2 left-2 w-2 h-2 border-t border-l border-zinc-700 pointer-events-none group-hover:border-amber-500 transition-colors" />
-      <div className="absolute top-2 right-2 w-2 h-2 border-t border-r border-zinc-700 pointer-events-none group-hover:border-amber-500 transition-colors" />
-      <div className="absolute bottom-2 left-2 w-2 h-2 border-b border-l border-zinc-700 pointer-events-none group-hover:border-amber-500 transition-colors" />
-      <div className="absolute bottom-2 right-2 w-2 h-2 border-b border-r border-zinc-700 pointer-events-none group-hover:border-amber-500 transition-colors" />
+  // Dynamic colorway halo filter
+  const colorwayHalo =
+    selectedColorway === 'amber'
+      ? 'from-amber-500/20 via-transparent'
+      : selectedColorway === 'titanium'
+      ? 'from-cyan-500/20 via-transparent'
+      : 'from-orange-500/10 via-transparent';
 
-      {/* Top Image Presentation */}
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={tiltStyle}
+      className="group relative bg-zinc-950/80 border border-zinc-800/90 hover:border-amber-500/70 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-orange-500/15 transition-all duration-300 flex flex-col justify-between"
+    >
+      {/* Precision Mechanical Calibration marks */}
+      <div className="absolute top-2 left-2 w-2.5 h-2.5 border-t-2 border-l-2 border-zinc-700 pointer-events-none group-hover:border-amber-500 transition-colors" />
+      <div className="absolute top-2 right-2 w-2.5 h-2.5 border-t-2 border-r-2 border-zinc-700 pointer-events-none group-hover:border-amber-500 transition-colors" />
+      <div className="absolute bottom-2 left-2 w-2.5 h-2.5 border-b-2 border-l-2 border-zinc-700 pointer-events-none group-hover:border-amber-500 transition-colors" />
+      <div className="absolute bottom-2 right-2 w-2.5 h-2.5 border-b-2 border-r-2 border-zinc-700 pointer-events-none group-hover:border-amber-500 transition-colors" />
+
+      {/* Top Image Stage */}
       <div>
         <div
-          onClick={() => onViewDetails(product)}
+          onClick={() => {
+            sound.playClick(700);
+            onViewDetails(product);
+          }}
           className="relative w-full aspect-square overflow-hidden bg-zinc-900/60 cursor-pointer p-6 flex items-center justify-center"
         >
-          {/* Subtle Grid overlay inside image stage */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-500/5 via-transparent to-transparent opacity-60" />
+          {/* Dynamic Colorway Aura */}
+          <div className={`absolute inset-0 bg-gradient-to-tr ${colorwayHalo} to-transparent opacity-80 transition-all duration-500`} />
 
           <img
             src={product.images[activeImageIndex] || product.images[0]}
             alt={product.title}
-            className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500 z-10 drop-shadow-2xl"
+            className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500 z-10 drop-shadow-2xl"
           />
 
-          {/* Top Status & Category Badges */}
+          {/* Badges */}
           <div className="absolute top-3.5 left-3.5 flex flex-col gap-1.5 items-start z-20">
             <span className="font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-300 border border-zinc-800 shadow">
               {product.category}
@@ -90,7 +143,7 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
               {product.images.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setActiveImageIndex(idx)}
+                  onClick={(e) => handleImageSwitch(idx, e)}
                   className={`w-2 h-2 rounded-full transition-all ${
                     activeImageIndex === idx
                       ? 'bg-amber-400 w-4'
@@ -114,21 +167,64 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
             <span className="text-zinc-500 tracking-wider">SKU: {product.id}</span>
           </div>
 
-          {/* Title */}
+          {/* Title with Scramble Effect */}
           <h3
-            onClick={() => onViewDetails(product)}
+            onClick={() => {
+              sound.playClick(700);
+              onViewDetails(product);
+            }}
             className="text-sm font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-1 cursor-pointer tracking-tight"
           >
-            {product.title}
+            <TextScramble text={product.title} />
           </h3>
 
           <p className="text-xs text-zinc-400 line-clamp-2 mt-1.5 leading-relaxed font-sans">
             {product.description}
           </p>
 
+          {/* Colorway Switcher Dots */}
+          <div className="mt-3 flex items-center justify-between pt-2 border-t border-zinc-900 font-mono text-[10px]">
+            <span className="text-zinc-500">CHASSIS_TINT:</span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick(600);
+                  setSelectedColorway('obsidian');
+                }}
+                className={`w-3.5 h-3.5 rounded-full bg-zinc-900 border ${
+                  selectedColorway === 'obsidian' ? 'border-amber-400 scale-125' : 'border-zinc-700'
+                }`}
+                title="Obsidian Dark"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick(750);
+                  setSelectedColorway('titanium');
+                }}
+                className={`w-3.5 h-3.5 rounded-full bg-cyan-900 border ${
+                  selectedColorway === 'titanium' ? 'border-cyan-400 scale-125' : 'border-zinc-700'
+                }`}
+                title="Titanium Frost"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick(900);
+                  setSelectedColorway('amber');
+                }}
+                className={`w-3.5 h-3.5 rounded-full bg-amber-600 border ${
+                  selectedColorway === 'amber' ? 'border-amber-300 scale-125' : 'border-zinc-700'
+                }`}
+                title="Amber Kinetic"
+              />
+            </div>
+          </div>
+
           {/* High-Tech Specs Pill Strip */}
           {firstSpecs.length > 0 && (
-            <div className="mt-3.5 flex flex-wrap gap-1.5">
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {firstSpecs.map(([label, val]) => (
                 <div
                   key={label}
@@ -164,7 +260,7 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
 
         <button
           onClick={handleQuickAdd}
-          className={`px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-1.5 shadow-md ${
+          className={`px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer ${
             isAdded
               ? 'bg-emerald-500 text-zinc-950 scale-105'
               : 'bg-zinc-900 hover:bg-amber-500 text-zinc-200 hover:text-zinc-950 border border-zinc-800 hover:border-amber-400 active:scale-95'
@@ -173,7 +269,7 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
           {isAdded ? (
             <>
               <Check className="w-3.5 h-3.5 stroke-[3]" />
-              <span>LOGGED</span>
+              <span>ENGAGED</span>
             </>
           ) : (
             <>

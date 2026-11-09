@@ -2,72 +2,96 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Zap, Truck, ShieldCheck, BarChart3 } from 'lucide-react';
+import { ShoppingBag, Zap, Truck, ShieldCheck, Terminal, Compass, Layers, Activity } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
 
 export function StoreHeader() {
   const { totalItems, subtotal, setIsCartOpen } = useCart();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/85 backdrop-blur-md">
-      {/* Free Shipping Alert Bar */}
-      <div className="bg-gradient-to-r from-indigo-900/60 via-purple-900/60 to-indigo-900/60 border-b border-indigo-500/20 py-1.5 px-4 text-center text-xs text-indigo-200 flex items-center justify-center gap-2">
-        <Truck className="w-3.5 h-3.5 text-indigo-400" />
-        <span>
-          Free Express Shipping on all orders over <strong>$200</strong> • Use code{' '}
-          <strong className="text-white font-mono bg-indigo-500/30 px-1.5 py-0.5 rounded border border-indigo-400/30">
-            SAVE15
-          </strong>{' '}
-          for 15% off!
-        </span>
+    <header className="sticky top-0 z-50 w-full px-3 sm:px-6 pt-3 pb-2 backdrop-blur-md">
+      {/* Micro Telemetry Dispatch Ticker */}
+      <div className="max-w-7xl mx-auto mb-2.5 flex items-center justify-between text-[11px] font-mono text-zinc-400 bg-zinc-950/80 border border-zinc-800/80 rounded-xl px-3 sm:px-4 py-1.5 shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="text-zinc-300 font-semibold tracking-wide">SYSTEM: ACTIVE</span>
+          <span className="hidden sm:inline text-zinc-600">|</span>
+          <span className="hidden sm:inline text-zinc-400">DISPATCH LEAD: &lt; 24H</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-amber-400 font-medium">
+            ORDERS &gt; $200 SHIP FREE
+          </span>
+          <span className="text-zinc-600">|</span>
+          <span>CODE: <strong className="text-white bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">SAVE15</strong> (-15%)</span>
+        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      {/* Floating Tactical Island */}
+      <div className="max-w-7xl mx-auto bg-zinc-950/90 border border-zinc-800/90 rounded-2xl px-4 sm:px-6 h-16 flex items-center justify-between shadow-2xl backdrop-blur-xl">
         {/* Brand */}
-        <Link href="/" className="flex items-center space-x-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-sky-400 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-            <Zap className="w-5 h-5 text-white" />
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 via-orange-600 to-amber-700 flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-all">
+            <Zap className="w-5 h-5 text-zinc-950 fill-zinc-950" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-lg tracking-tight text-white flex items-center gap-1.5">
-              QuickCart
-              <span className="text-[10px] uppercase font-mono tracking-widest px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                Headless
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-base tracking-tight text-white font-mono">
+                QUICKCART
               </span>
+              <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold">
+                EDITION//26
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-500 tracking-wider">
+              HEADLESS HARDWARE DEPOT
             </span>
           </div>
         </Link>
 
-        {/* Links */}
-        <nav className="hidden md:flex items-center space-x-6 text-xs font-semibold text-slate-300">
-          <Link href="/" className="hover:text-white transition-colors">
-            Storefront
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 text-xs font-mono">
+          <Link
+            href="/"
+            className="px-3.5 py-1.5 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900/80 transition-all flex items-center gap-1.5"
+          >
+            <Layers className="w-3.5 h-3.5 text-amber-500" />
+            <span>[01/CATALOG]</span>
           </Link>
-          <Link href="/track" className="hover:text-white transition-colors flex items-center gap-1">
-            <Truck className="w-3.5 h-3.5 text-sky-400" />
-            <span>Track Order</span>
+
+          <Link
+            href="/track"
+            className="px-3.5 py-1.5 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900/80 transition-all flex items-center gap-1.5"
+          >
+            <Compass className="w-3.5 h-3.5 text-cyan-400" />
+            <span>[02/TELEMETRY]</span>
           </Link>
-          <Link href="/admin" className="hover:text-white transition-colors flex items-center gap-1">
-            <BarChart3 className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Store Admin</span>
+
+          <Link
+            href="/admin"
+            className="px-3.5 py-1.5 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-900/80 transition-all flex items-center gap-1.5"
+          >
+            <Activity className="w-3.5 h-3.5 text-emerald-400" />
+            <span>[03/DEPOT_ADMIN]</span>
           </Link>
         </nav>
 
-        {/* Cart Trigger Pill */}
+        {/* Right Tactical Action: Cart Trigger Pill */}
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="flex items-center space-x-2.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 transition-all hover:scale-105"
+            className="relative flex items-center gap-2.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold text-xs transition-all shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-95 cursor-pointer font-mono"
           >
-            <div className="relative">
-              <ShoppingBag className="w-4 h-4" />
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-emerald-500 text-[10px] font-bold flex items-center justify-center text-white ring-2 ring-slate-950 animate-pulse">
-                  {totalItems}
-                </span>
-              )}
-            </div>
-            <span className="text-xs font-bold hidden sm:inline">
+            <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
+            <span className="hidden sm:inline font-mono">PAYLOAD</span>
+            <span className="w-5 h-5 rounded-full bg-zinc-950 text-amber-400 text-[10px] font-extrabold flex items-center justify-center">
+              {totalItems}
+            </span>
+            <span className="hidden sm:inline font-mono text-[11px] text-zinc-900 border-l border-zinc-900/40 pl-2">
               ${subtotal.toFixed(2)}
             </span>
           </button>

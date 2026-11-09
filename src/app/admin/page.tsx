@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   TrendingUp,
   Package,
@@ -15,10 +16,15 @@ import {
   ArrowLeft,
   Search,
   Filter,
+  LogOut,
+  ShieldCheck,
+  Terminal,
 } from 'lucide-react';
 import { Order, OrderStatus, Product, StoreMetrics } from '@/lib/types';
+import { sound } from '@/lib/audio/sound-fx';
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [metrics, setMetrics] = useState<StoreMetrics | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +32,7 @@ export default function AdminDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -57,6 +64,7 @@ export default function AdminDashboardPage() {
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingOrderId(orderId);
+    sound.playClick(900);
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
@@ -66,13 +74,14 @@ export default function AdminDashboardPage() {
 
       const resData = await res.json();
       if (resData.success && metrics) {
+        sound.playEngage();
         setMetrics({
           ...metrics,
           recentOrders: metrics.recentOrders.map((o) =>
             o.id === orderId ? { ...o, status: newStatus } : o
           ),
         });
-        setFeedbackMsg(`Order #${orderId} status changed to ${newStatus}`);
+        setFeedbackMsg(`Order #${orderId} state transitioned to ${newStatus}`);
         setTimeout(() => setFeedbackMsg(null), 3500);
       }
     } catch (err) {
@@ -82,162 +91,212 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleLogout = async () => {
+    sound.playClick(500);
+    setIsLoggingOut(true);
+    try {
+      await fetch('/api/admin/auth/logout', { method: 'POST' });
+      router.push('/admin/login');
+      router.refresh();
+    } catch (err) {
+      console.error('Logout error', err);
+      setIsLoggingOut(false);
+    }
+  };
+
   const filteredOrders = metrics?.recentOrders.filter((o) => {
     if (statusFilter === 'ALL') return true;
     return o.status === statusFilter;
   }) || [];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Admin Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Link
-                href="/"
-                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Storefront
-              </Link>
-              <span className="text-slate-600">&bull;</span>
-              <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">
-                Control Plane
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Security Operator Pill Header */}
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 font-mono text-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-white uppercase">
+                  OPERATOR // CHIEF_LOGISTICS_OFFICER
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/30">
+                  AUTHENTICATED
+                </span>
+              </div>
+              <span className="text-[11px] text-zinc-500">
+                BADGE: QC-SEC-9901 &bull; IP: 127.0.0.1 (SECURE TLS)
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Fulfillment &amp; Inventory Admin
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              onClick={() => sound.playClick(700)}
+              className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition-colors"
+            >
+              [RETURN_STOREFRONT]
+            </Link>
+
+            {/* Logout Action */}
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="px-3.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>{isLoggingOut ? 'TERMINATING...' : 'LOGOUT'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Dashboard Title Bar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1 font-mono text-xs text-amber-500">
+              <Terminal className="w-3.5 h-3.5" />
+              <span>CONTROL_PLANE // OPERATIONS_CENTER</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white font-mono uppercase tracking-tight">
+              DEPOT FULFILLMENT &amp; TELEMETRY
             </h1>
           </div>
 
           <div className="flex items-center gap-3">
             <button
-              onClick={fetchData}
+              onClick={() => {
+                sound.playClick(800);
+                fetchData();
+              }}
               disabled={loading}
-              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-2 transition-all"
+              className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white font-mono text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              Refresh Data
+              <span>REFRESH_TELEMETRY</span>
             </button>
-            <Link
-              href="/"
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md transition-all"
-            >
-              Open Live Store
-            </Link>
           </div>
         </div>
 
         {/* Feedback Alert Toast */}
         {feedbackMsg && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 text-emerald-400 text-xs font-semibold animate-in fade-in duration-150">
+          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 text-emerald-400 font-mono text-xs font-bold animate-in fade-in duration-150">
             <CheckCircle className="w-4 h-4 shrink-0" />
             <span>{feedbackMsg}</span>
           </div>
         )}
 
         {/* Executive KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Revenue */}
-          <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-medium">Gross Revenue</span>
+          <div className="p-5 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-xl font-mono">
+            <div className="flex items-center justify-between text-zinc-400 mb-2">
+              <span className="text-[11px] uppercase tracking-wider font-bold">Gross Revenue</span>
               <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
                 <TrendingUp className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-extrabold font-mono text-white">
+            <div className="text-2xl font-black text-white">
               ${metrics ? metrics.totalRevenue.toFixed(2) : '0.00'}
             </div>
-            <p className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
-              <span>Paid transactions verified</span>
-            </p>
+            <p className="text-[10px] text-emerald-400 mt-1">Paid transactions verified</p>
           </div>
 
           {/* Total Orders */}
-          <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-medium">Total Orders</span>
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+          <div className="p-5 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-xl font-mono">
+            <div className="flex items-center justify-between text-zinc-400 mb-2">
+              <span className="text-[11px] uppercase tracking-wider font-bold">Total Orders</span>
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
                 <ShoppingBag className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-extrabold font-mono text-white">
+            <div className="text-2xl font-black text-white">
               {metrics ? metrics.totalOrders : 0}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Live customer orders</p>
+            <p className="text-[10px] text-zinc-400 mt-1">Recorded payloads</p>
           </div>
 
           {/* Active Products */}
-          <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-medium">Active SKUs</span>
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+          <div className="p-5 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-xl font-mono">
+            <div className="flex items-center justify-between text-zinc-400 mb-2">
+              <span className="text-[11px] uppercase tracking-wider font-bold">Catalog SKUs</span>
+              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
                 <Package className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-extrabold font-mono text-white">
+            <div className="text-2xl font-black text-white">
               {metrics ? metrics.activeProducts : 0}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Catalog items listed</p>
+            <p className="text-[10px] text-zinc-400 mt-1">Active items listed</p>
           </div>
 
           {/* Low Stock Alerts */}
-          <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-medium">Low Stock Alerts</span>
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+          <div className="p-5 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-xl font-mono">
+            <div className="flex items-center justify-between text-zinc-400 mb-2">
+              <span className="text-[11px] uppercase tracking-wider font-bold">Scarcity Warning</span>
+              <div className="p-2 rounded-xl bg-orange-500/10 text-orange-400">
                 <AlertTriangle className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-extrabold font-mono text-amber-400">
+            <div className="text-2xl font-black text-orange-400">
               {metrics ? metrics.lowStockCount : 0}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Items below 10 units</p>
+            <p className="text-[10px] text-zinc-400 mt-1">Units below 10 remaining</p>
           </div>
         </div>
 
         {/* Tab Controls Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4 font-mono">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setActiveTab('orders')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              onClick={() => {
+                sound.playClick(750);
+                setActiveTab('orders');
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'orders'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                  ? 'bg-amber-500 text-zinc-950 shadow-md'
+                  : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
               }`}
             >
-              Order Fulfillment ({metrics?.recentOrders.length || 0})
+              ORDER_FULFILLMENT ({metrics?.recentOrders.length || 0})
             </button>
             <button
-              onClick={() => setActiveTab('inventory')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              onClick={() => {
+                sound.playClick(750);
+                setActiveTab('inventory');
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'inventory'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                  ? 'bg-amber-500 text-zinc-950 shadow-md'
+                  : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
               }`}
             >
-              Inventory Management ({products.length})
+              INVENTORY_RADAR ({products.length})
             </button>
           </div>
 
           {activeTab === 'orders' && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Filter Status:</span>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-zinc-500">FILTER_STATUS:</span>
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                aria-label="Filter orders by status"
-                className="bg-slate-900 border border-slate-800 text-xs rounded-xl px-3 py-1.5 text-white outline-none focus:border-indigo-500"
+                onChange={(e) => {
+                  sound.playClick(650);
+                  setStatusFilter(e.target.value);
+                }}
+                aria-label="Filter orders by fulfillment status"
+                className="bg-zinc-900 border border-zinc-800 text-xs rounded-xl px-3 py-1.5 text-white outline-none focus:border-amber-500 cursor-pointer"
               >
-                <option value="ALL">All Statuses</option>
-                <option value="PLACED">Placed</option>
-                <option value="PROCESSING">Processing</option>
-                <option value="SHIPPED">Shipped</option>
-                <option value="DELIVERED">Delivered</option>
-                <option value="CANCELLED">Cancelled</option>
+                <option value="ALL">ALL STATUSES</option>
+                <option value="PLACED">PLACED</option>
+                <option value="PROCESSING">PROCESSING</option>
+                <option value="SHIPPED">SHIPPED</option>
+                <option value="DELIVERED">DELIVERED</option>
+                <option value="CANCELLED">CANCELLED</option>
               </select>
             </div>
           )}
@@ -245,44 +304,44 @@ export default function AdminDashboardPage() {
 
         {/* Tab 1: Orders Fulfillment Table */}
         {activeTab === 'orders' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-3xl shadow-xl overflow-hidden font-mono text-xs">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-950/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+              <table className="w-full text-left">
+                <thead className="bg-zinc-900/80 text-zinc-400 uppercase tracking-wider font-semibold border-b border-zinc-800">
                   <tr>
-                    <th className="py-3.5 px-4">Order ID &amp; Date</th>
-                    <th className="py-3.5 px-4">Customer</th>
-                    <th className="py-3.5 px-4">Items</th>
-                    <th className="py-3.5 px-4">Total</th>
-                    <th className="py-3.5 px-4">Current Status</th>
-                    <th className="py-3.5 px-4 text-right">Actions</th>
+                    <th className="py-3.5 px-4">Order ID &amp; Timestamp</th>
+                    <th className="py-3.5 px-4">Recipient</th>
+                    <th className="py-3.5 px-4">Payload Units</th>
+                    <th className="py-3.5 px-4">Charged Total</th>
+                    <th className="py-3.5 px-4">State Transition</th>
+                    <th className="py-3.5 px-4 text-right">Telemetry Link</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 text-slate-300">
+                <tbody className="divide-y divide-zinc-800/80 text-zinc-300">
                   {filteredOrders.length > 0 ? (
                     filteredOrders.map((order) => (
-                      <tr key={order.id} className="hover:bg-slate-800/40 transition-colors">
+                      <tr key={order.id} className="hover:bg-zinc-900/40 transition-colors">
                         <td className="py-4 px-4">
-                          <div className="font-mono font-bold text-white">{order.id}</div>
-                          <div className="text-[11px] text-slate-500">
+                          <div className="font-bold text-white">{order.id}</div>
+                          <div className="text-[11px] text-zinc-500">
                             {new Date(order.createdAt).toLocaleDateString()}
                           </div>
                         </td>
 
                         <td className="py-4 px-4">
-                          <div className="font-medium text-white">{order.customerName}</div>
-                          <div className="text-[11px] text-slate-400 truncate max-w-xs">
+                          <div className="font-bold text-white">{order.customerName}</div>
+                          <div className="text-[11px] text-zinc-400 truncate max-w-xs">
                             {order.customerEmail}
                           </div>
                         </td>
 
                         <td className="py-4 px-4">
-                          <span className="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-300 border border-slate-800 font-mono">
+                          <span className="px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-300 border border-zinc-800">
                             {order.items.reduce((s, i) => s + i.quantity, 0)} units
                           </span>
                         </td>
 
-                        <td className="py-4 px-4 font-mono font-bold text-indigo-400">
+                        <td className="py-4 px-4 font-black text-amber-400">
                           ${order.totalAmount.toFixed(2)}
                         </td>
 
@@ -294,23 +353,23 @@ export default function AdminDashboardPage() {
                               handleUpdateStatus(order.id, e.target.value as OrderStatus)
                             }
                             aria-label={`Update status for order ${order.id}`}
-                            className={`rounded-xl px-2.5 py-1 text-xs font-semibold border outline-none cursor-pointer ${
+                            className={`rounded-xl px-2.5 py-1 text-xs font-bold border outline-none cursor-pointer ${
                               order.status === 'DELIVERED'
                                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                                 : order.status === 'SHIPPED'
-                                ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                                ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
                                 : order.status === 'PROCESSING'
                                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                                 : order.status === 'CANCELLED'
                                 ? 'bg-red-500/10 text-red-400 border-red-500/30'
-                                : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                                : 'bg-zinc-900 text-zinc-300 border-zinc-700'
                             }`}
                           >
-                            <option value="PLACED" className="bg-slate-900 text-white">PLACED</option>
-                            <option value="PROCESSING" className="bg-slate-900 text-white">PROCESSING</option>
-                            <option value="SHIPPED" className="bg-slate-900 text-white">SHIPPED</option>
-                            <option value="DELIVERED" className="bg-slate-900 text-white">DELIVERED</option>
-                            <option value="CANCELLED" className="bg-slate-900 text-white">CANCELLED</option>
+                            <option value="PLACED" className="bg-zinc-950 text-white">PLACED</option>
+                            <option value="PROCESSING" className="bg-zinc-950 text-white">PROCESSING</option>
+                            <option value="SHIPPED" className="bg-zinc-950 text-white">SHIPPED</option>
+                            <option value="DELIVERED" className="bg-zinc-950 text-white">DELIVERED</option>
+                            <option value="CANCELLED" className="bg-zinc-950 text-white">CANCELLED</option>
                           </select>
                         </td>
 
@@ -318,9 +377,10 @@ export default function AdminDashboardPage() {
                           <Link
                             href={`/track?id=${order.id}`}
                             target="_blank"
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-indigo-400 text-xs font-medium border border-slate-800 transition-colors"
+                            onClick={() => sound.playClick(900)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-400 text-xs font-bold border border-zinc-800 transition-colors"
                           >
-                            <span>Live Track</span>
+                            <span>LIVE_TRACK</span>
                             <ExternalLink className="w-3 h-3" />
                           </Link>
                         </td>
@@ -328,8 +388,8 @@ export default function AdminDashboardPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-500">
-                        No orders match this status filter.
+                      <td colSpan={6} className="py-8 text-center text-zinc-500">
+                        NO ORDERS IN THIS STATUS BIN.
                       </td>
                     </tr>
                   )}
@@ -339,59 +399,59 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Tab 2: Inventory Stock Table */}
+        {/* Tab 2: Inventory Radar */}
         {activeTab === 'inventory' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-3xl shadow-xl overflow-hidden font-mono text-xs">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-950/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+              <table className="w-full text-left">
+                <thead className="bg-zinc-900/80 text-zinc-400 uppercase tracking-wider font-semibold border-b border-zinc-800">
                   <tr>
-                    <th className="py-3.5 px-4">Product</th>
+                    <th className="py-3.5 px-4">Hardware SKU</th>
                     <th className="py-3.5 px-4">Category</th>
-                    <th className="py-3.5 px-4">Unit Price</th>
-                    <th className="py-3.5 px-4">In Stock Units</th>
+                    <th className="py-3.5 px-4">MSRP Price</th>
+                    <th className="py-3.5 px-4">Remaining Units</th>
                     <th className="py-3.5 px-4">Stock Health</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 text-slate-300">
+                <tbody className="divide-y divide-zinc-800/80 text-zinc-300">
                   {products.map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
+                    <tr key={p.id} className="hover:bg-zinc-900/40 transition-colors">
                       <td className="py-3.5 px-4 flex items-center gap-3">
                         <img
                           src={p.images[0]}
                           alt={p.title}
-                          className="w-10 h-10 rounded-xl object-cover bg-slate-950 border border-slate-800"
+                          className="w-10 h-10 rounded-xl object-cover bg-zinc-900 border border-zinc-800"
                         />
                         <div>
-                          <div className="font-semibold text-white">{p.title}</div>
-                          <div className="font-mono text-[10px] text-slate-500">{p.id}</div>
+                          <div className="font-bold text-white">{p.title}</div>
+                          <div className="text-[10px] text-zinc-500">{p.id}</div>
                         </div>
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className="capitalize text-slate-300">{p.category}</span>
+                        <span className="uppercase text-zinc-300">{p.category}</span>
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono font-bold text-white">
+                      <td className="py-3.5 px-4 font-black text-white">
                         ${p.price.toFixed(2)}
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono font-bold">
+                      <td className="py-3.5 px-4 font-black text-amber-400">
                         {p.stockQuantity}
                       </td>
 
                       <td className="py-3.5 px-4">
                         {p.stockQuantity <= 0 ? (
-                          <span className="px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 font-semibold text-[10px] uppercase">
-                            Out of Stock
+                          <span className="px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 font-bold text-[10px] uppercase">
+                            DEPLETED
                           </span>
                         ) : p.stockQuantity < 10 ? (
-                          <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold text-[10px] uppercase">
-                            Low Stock
+                          <span className="px-2.5 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/30 font-bold text-[10px] uppercase">
+                            LOW_RESERVE
                           </span>
                         ) : (
-                          <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold text-[10px] uppercase">
-                            Healthy
+                          <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-[10px] uppercase">
+                            NOMINAL
                           </span>
                         )}
                       </td>

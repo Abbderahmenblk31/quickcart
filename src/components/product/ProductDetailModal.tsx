@@ -9,11 +9,10 @@ import {
   Truck,
   CheckCircle2,
   Clock,
-  Cpu,
-  Zap,
 } from 'lucide-react';
 import { Product } from '@/lib/types';
 import { useCart } from '@/lib/context/CartContext';
+import { sound } from '@/lib/audio/sound-fx';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -28,28 +27,32 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
   if (!product) return null;
 
   const handleAddToCart = () => {
+    sound.playEngage();
     addToCart(product, quantity);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="relative w-full max-w-3xl bg-zinc-950 border border-zinc-800 rounded-3xl shadow-2xl p-6 sm:p-8 overflow-hidden max-h-[90vh] flex flex-col md:flex-row gap-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8 overflow-hidden max-h-[90vh] flex flex-col md:flex-row gap-8">
         {/* Close Button */}
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-xl bg-zinc-900/80 text-zinc-400 hover:text-white border border-zinc-800 transition-colors"
+          onClick={() => {
+            sound.playClick(600);
+            onClose();
+          }}
+          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Left Column: Image Gallery */}
         <div className="w-full md:w-1/2 flex flex-col gap-3">
-          <div className="relative aspect-square rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800/80 p-6 flex items-center justify-center">
+          <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950 p-6 flex items-center justify-center border border-slate-100 dark:border-slate-800">
             <img
               src={product.images[selectedImage] || product.images[0]}
               alt={product.title}
-              className="w-full h-full object-cover rounded-xl drop-shadow-2xl"
+              className="w-full h-full object-contain drop-shadow-md"
             />
           </div>
 
@@ -59,11 +62,14 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
               {product.images.map((img, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setSelectedImage(idx)}
-                  className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all p-1 bg-zinc-900 ${
+                  onClick={() => {
+                    sound.playClick(850);
+                    setSelectedImage(idx);
+                  }}
+                  className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all p-1 bg-slate-50 dark:bg-slate-950 ${
                     selectedImage === idx
-                      ? 'border-amber-500 scale-105'
-                      : 'border-zinc-800 opacity-60 hover:opacity-100'
+                      ? 'border-blue-600 dark:border-blue-400 scale-105'
+                      : 'border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100'
                   }`}
                 >
                   <img src={img} alt="Thumbnail" className="w-full h-full object-cover rounded-lg" />
@@ -77,71 +83,69 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
         <div className="w-full md:w-1/2 flex flex-col justify-between overflow-y-auto custom-scrollbar">
           <div className="space-y-4">
             <div>
-              <div className="flex items-center space-x-2 mb-2 font-mono">
-                <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                   {product.category}
                 </span>
 
                 {product.stockQuantity < 10 ? (
-                  <span className="text-[10px] font-bold text-orange-400 flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    SCARCITY: {product.stockQuantity} UNITS LEFT
+                    Only {product.stockQuantity} remaining!
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" />
-                    DEPLOYMENT READY ({product.stockQuantity} UNITS)
+                    In Stock &amp; Ready to Ship
                   </span>
                 )}
               </div>
 
-              <h2 className="text-xl sm:text-2xl font-black text-white leading-tight uppercase font-mono">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-tight">
                 {product.title}
               </h2>
 
-              {/* Rating & SKU */}
-              <div className="flex items-center space-x-3 mt-2 font-mono text-xs text-zinc-400">
+              {/* Rating */}
+              <div className="flex items-center space-x-2 mt-1.5 text-xs text-slate-500">
                 <div className="flex items-center text-amber-400">
-                  <Star className="w-3.5 h-3.5 fill-current mr-1" />
-                  <span className="font-bold text-white">{product.rating}</span>
+                  <Star className="w-4 h-4 fill-current mr-1" />
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{product.rating}</span>
                 </div>
-                <span>({product.reviewCount} verified reviews)</span>
-                <span className="text-zinc-600">|</span>
-                <span className="text-zinc-500">SKU: {product.id}</span>
+                <span>({product.reviewCount} customer reviews)</span>
               </div>
             </div>
 
             {/* Price */}
-            <div className="flex items-baseline space-x-3 p-3.5 bg-zinc-900/60 border border-zinc-800 rounded-2xl">
-              <span className="text-2xl font-black text-white font-mono">
+            <div className="flex items-baseline space-x-3 p-3.5 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <span className="text-2xl font-black text-slate-900 dark:text-white">
                 ${product.price.toFixed(2)}
               </span>
               {product.comparePrice && (
-                <span className="text-sm text-zinc-500 line-through font-mono">
+                <span className="text-sm text-slate-400 line-through">
                   ${product.comparePrice.toFixed(2)}
                 </span>
               )}
             </div>
 
             {/* Description */}
-            <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               {product.description}
             </p>
 
             {/* Technical Specifications */}
             {product.specs && Object.keys(product.specs).length > 0 && (
               <div>
-                <h4 className="font-mono text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">
-                  TELEMETRY &amp; SPECIFICATIONS
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  Technical Specifications
                 </h4>
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                <div className="grid grid-cols-2 gap-2 text-xs">
                   {Object.entries(product.specs).map(([key, val]) => (
                     <div
                       key={key}
-                      className="p-2.5 bg-zinc-900/80 border border-zinc-800/80 rounded-xl"
+                      className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl"
                     >
-                      <span className="block text-[10px] text-zinc-500 uppercase">{key}</span>
-                      <span className="font-bold text-zinc-200 truncate block">
+                      <span className="block text-[10px] text-slate-400 font-medium uppercase">{key}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 truncate block">
                         {val}
                       </span>
                     </div>
@@ -152,23 +156,27 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
           </div>
 
           {/* Action Row */}
-          <div className="pt-6 mt-6 border-t border-zinc-800/80 flex items-center gap-3">
+          <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
             {/* Quantity */}
-            <div className="flex items-center border border-zinc-800 bg-zinc-900 rounded-xl p-1 font-mono">
+            <div className="flex items-center border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-full p-1">
               <button
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-white font-bold"
+                onClick={() => {
+                  sound.playClick(700);
+                  setQuantity((q) => Math.max(1, q - 1));
+                }}
+                className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold"
               >
                 -
               </button>
-              <span className="text-xs font-bold px-3 text-white">
+              <span className="text-xs font-bold px-3 text-slate-900 dark:text-white">
                 {quantity}
               </span>
               <button
-                onClick={() =>
-                  setQuantity((q) => Math.min(product.stockQuantity, q + 1))
-                }
-                className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-white font-bold"
+                onClick={() => {
+                  sound.playClick(900);
+                  setQuantity((q) => Math.min(product.stockQuantity, q + 1));
+                }}
+                className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold"
               >
                 +
               </button>
@@ -177,10 +185,10 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black text-xs rounded-xl shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] active:scale-98 font-mono tracking-wider"
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold text-xs rounded-full shadow-md transition-all hover:scale-[1.01] active:scale-98"
             >
-              <Zap className="w-4 h-4 fill-zinc-950" />
-              <span>ENGAGE UNIT • ${(product.price * quantity).toFixed(2)}</span>
+              <ShoppingBag className="w-4 h-4" />
+              <span>Add to Bag &bull; ${(product.price * quantity).toFixed(2)}</span>
             </button>
           </div>
         </div>

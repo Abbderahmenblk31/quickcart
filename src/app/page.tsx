@@ -5,32 +5,22 @@ import Link from 'next/link';
 import {
   Search,
   SlidersHorizontal,
-  Zap,
-  Radio,
-  Cpu,
+  Sparkles,
   ShieldCheck,
+  Zap,
   Truck,
   RotateCcw,
   ArrowRight,
-  TrendingUp,
   PackageCheck,
   Star,
   CheckCircle2,
-  Crosshair,
-  Sparkles,
-  Terminal,
-  ArrowRightLeft,
-  Activity,
-  Layers,
 } from 'lucide-react';
 import { ProductCard } from '@/components/product/ProductCard';
 import { ProductDetailModal } from '@/components/product/ProductDetailModal';
-import { HardwareComparator } from '@/components/interactive/HardwareComparator';
 import { INITIAL_PRODUCTS } from '@/lib/data/catalog';
 import { Product } from '@/lib/types';
 import { useCart } from '@/lib/context/CartContext';
 import { sound } from '@/lib/audio/sound-fx';
-import { TextScramble } from '@/components/ui/TextScramble';
 
 export default function StorefrontPage() {
   const { addToCart } = useCart();
@@ -40,19 +30,17 @@ export default function StorefrontPage() {
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [activeModalProduct, setActiveModalProduct] = useState<Product | null>(null);
-  const [isComparatorOpen, setIsComparatorOpen] = useState<boolean>(false);
 
-  // Hero flagship showcase state
+  // Hero flagship showcase
   const flagshipProduct = products[0]; // AuraWave Pro ANC
   const [flagshipAdded, setFlagshipAdded] = useState(false);
-  const [flagshipImageIdx, setFlagshipImageIdx] = useState(0);
 
   const categories = [
-    { id: 'all', name: 'ALL_UNITS', code: '00' },
-    { id: 'audio', name: 'AUDIO_ACOUSTICS', code: '01' },
-    { id: 'wearables', name: 'WEARABLE_BIO', code: '02' },
-    { id: 'electronics', name: 'CORE_COMPUTING', code: '03' },
-    { id: 'accessories', name: 'TACTICAL_ACC', code: '04' },
+    { id: 'all', name: 'All Products' },
+    { id: 'audio', name: 'Audio & Acoustics' },
+    { id: 'wearables', name: 'Wearables & Health' },
+    { id: 'electronics', name: 'Computers & Power' },
+    { id: 'accessories', name: 'Desk Accessories' },
   ];
 
   // Filtered and sorted products
@@ -85,253 +73,144 @@ export default function StorefrontPage() {
   };
 
   const handleCategorySelect = (id: string) => {
-    sound.playClick(850);
+    sound.playClick(800);
     setSelectedCategory(id);
   };
 
   return (
-    <div className="min-h-screen text-zinc-100 flex flex-col pb-20 relative">
-      {/* Avant-Garde Technical Millimeter Scale on Top Left */}
-      <div className="hidden xl:flex fixed left-3 top-28 flex-col items-center gap-2 text-[9px] font-mono text-zinc-600 pointer-events-none select-none z-30">
-        <span>000mm</span>
-        <div className="w-1.5 h-16 border-l border-zinc-800" />
-        <span>050mm</span>
-        <div className="w-1.5 h-16 border-l border-zinc-800" />
-        <span>100mm</span>
-      </div>
-
+    <div className="min-h-screen flex flex-col pb-20 transition-colors duration-200">
       {/* ========================================================================= */}
-      {/* 1. HERO BENTO SHOWCASE (Industrial Kinetic Showcase)                      */}
+      {/* 1. LUXURY EDITORIAL HERO BANNER                                           */}
       {/* ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-10 w-full">
-        {/* Top Laboratory Bar */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-zinc-500 pb-2 border-b border-zinc-800/80">
-          <div className="flex items-center gap-2">
-            <span className="text-amber-500 font-bold">/// QC_SPEC_LAB</span>
-            <span className="text-zinc-700">&bull;</span>
-            <span>EXPERIMENTATION RUN #094</span>
-          </div>
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-100/80 via-slate-50 to-slate-50 dark:from-slate-900/60 dark:via-slate-950 dark:to-slate-950 border-b border-slate-200/80 dark:border-slate-800/80 pt-10 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            {/* Left Headline */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5" />
+                Precision Hardware Collection 2026
+              </div>
 
-          <button
-            onClick={() => {
-              sound.playBlip();
-              setIsComparatorOpen(true);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-zinc-900 hover:bg-amber-500 hover:text-zinc-950 border border-zinc-800 text-zinc-300 font-bold transition-all text-[11px]"
-          >
-            <ArrowRightLeft className="w-3.5 h-3.5" />
-            <span>LAUNCH SPEC COMPARATOR [DIFF_LAB]</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          {/* Main Stage Left (Col 8): Flagship Hardware Rig */}
-          <div className="lg:col-span-8 bg-zinc-950 border border-zinc-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl flex flex-col justify-between group">
-            {/* Blueprint Grid Pattern */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-50" />
-            <div className="absolute -top-32 -left-32 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Header info strip */}
-            <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                  <Crosshair className="w-3 h-3 text-amber-500 animate-spin" style={{ animationDuration: '8s' }} />
-                  FLAGSHIP_SPECIMEN // 01
+              <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
+                Engineered for Clarity.{' '}
+                <span className="text-blue-600 dark:text-blue-400">
+                  Built for Precision.
                 </span>
-                <span className="font-mono text-[10px] text-zinc-500">
-                  REF: {flagshipProduct.id}
-                </span>
-              </div>
+              </h1>
 
-              <div className="flex items-center gap-2 font-mono text-xs">
-                <span className="text-zinc-500">GLOBAL RATING:</span>
-                <div className="flex items-center text-amber-400 font-bold">
-                  <Star className="w-3.5 h-3.5 fill-current mr-1" />
-                  {flagshipProduct.rating} / 5.0
-                </div>
-              </div>
-            </div>
+              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
+                Discover next-generation personal audio, titanium smartwatches, and desktop essentials. Delivered with complimentary express shipping on all orders over $200.
+              </p>
 
-            {/* Middle: Title & Image Stage */}
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center my-4">
-              <div className="md:col-span-6 space-y-4">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-none uppercase font-mono">
-                  <TextScramble text={flagshipProduct.title} />
-                </h1>
-                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-md">
-                  {flagshipProduct.description}
-                </p>
-
-                {/* Acoustic Frequency Waveform simulation */}
-                <div className="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-2">
-                  <div className="flex justify-between text-[10px] font-mono text-zinc-500 uppercase">
-                    <span>Acoustic Frequency Curve</span>
-                    <span className="text-amber-400 font-bold">20Hz - 40kHz</span>
-                  </div>
-                  <div className="flex items-end gap-1 h-6">
-                    {[35, 60, 45, 80, 95, 70, 50, 85, 100, 65, 40, 75, 90, 55, 30].map((h, i) => (
-                      <div
-                        key={i}
-                        className="flex-1 bg-amber-500/80 rounded-t transition-all hover:bg-amber-300"
-                        style={{ height: `${h}%` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Hardware Render Container */}
-              <div className="md:col-span-6 relative aspect-square max-h-80 mx-auto w-full flex items-center justify-center p-4">
-                <img
-                  src={flagshipProduct.images[flagshipImageIdx] || flagshipProduct.images[0]}
-                  alt={flagshipProduct.title}
-                  className="w-full h-full object-cover rounded-2xl drop-shadow-[0_20px_40px_rgba(249,115,22,0.15)] group-hover:scale-105 transition-transform duration-500"
-                />
-
-                {/* Thumbnail angle switcher */}
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 bg-zinc-950/80 px-2.5 py-1.5 rounded-full border border-zinc-800 backdrop-blur-md">
-                  {flagshipProduct.images.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        sound.playClick(900);
-                        setFlagshipImageIdx(idx);
-                      }}
-                      className={`w-3 h-3 rounded-full transition-all ${
-                        flagshipImageIdx === idx ? 'bg-amber-500 scale-125' : 'bg-zinc-700 hover:bg-zinc-500'
-                      }`}
-                      title={`Perspective ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Action Footer */}
-            <div className="relative z-10 pt-6 mt-4 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-baseline gap-3">
-                <span className="font-mono text-3xl font-black text-white">
-                  ${flagshipProduct.price.toFixed(2)}
-                </span>
-                {flagshipProduct.comparePrice && (
-                  <span className="font-mono text-sm text-zinc-500 line-through">
-                    ${flagshipProduct.comparePrice.toFixed(2)}
-                  </span>
-                )}
-                <span className="font-mono text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-                  FREE EXPRESS SHIPPING
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    sound.playClick(700);
-                    setActiveModalProduct(flagshipProduct);
-                  }}
-                  className="px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-mono text-xs font-bold border border-zinc-800 transition-colors"
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <a
+                  href="#catalog"
+                  onClick={() => sound.playClick(750)}
+                  className="px-6 py-3.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-blue-600 dark:hover:bg-blue-500 font-bold text-sm shadow-md transition-all flex items-center gap-2"
                 >
-                  FULL_SPECS
-                </button>
+                  Explore Collection
+                  <ArrowRight className="w-4 h-4" />
+                </a>
 
-                <button
-                  onClick={handleFlagshipAdd}
-                  className={`px-6 py-3 rounded-xl font-mono text-xs font-black transition-all flex items-center gap-2 shadow-xl cursor-pointer ${
-                    flagshipAdded
-                      ? 'bg-emerald-500 text-zinc-950 scale-105'
-                      : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 shadow-orange-500/20 hover:scale-[1.02] active:scale-95'
-                  }`}
-                >
-                  {flagshipAdded ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 stroke-[3]" />
-                      <span>RESERVED TO PAYLOAD</span>
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="w-4 h-4 fill-zinc-950" />
-                      <span>ORDER NOW • INSTANT DISPATCH</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Bento Modules Stack (Col 4) */}
-          <div className="lg:col-span-4 flex flex-col gap-5">
-            {/* Module 1: Logistics Telemetry Dashboard */}
-            <div className="p-6 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-xl flex-1 flex flex-col justify-between relative overflow-hidden">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-                  <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                    LOGISTICS RADAR
-                  </span>
-                </div>
-                <span className="font-mono text-[10px] text-zinc-500">GATEWAY 2.6</span>
-              </div>
-
-              <div className="space-y-3 font-mono text-xs">
-                <div className="p-3 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-between">
-                  <span className="text-zinc-400">Depot Throughput:</span>
-                  <span className="font-bold text-white">99.8% on-time</span>
-                </div>
-                <div className="p-3 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-between">
-                  <span className="text-zinc-400">Packaging Protocol:</span>
-                  <span className="font-bold text-amber-400">Anti-Static Sealed</span>
-                </div>
-                <div className="p-3 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-between">
-                  <span className="text-zinc-400">Carrier Partner:</span>
-                  <span className="font-bold text-cyan-400">DHL Express Direct</span>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-4 border-t border-zinc-800/80 flex items-center justify-between">
                 <Link
                   href="/track"
-                  onClick={() => sound.playClick(900)}
-                  className="font-mono text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1.5 transition-colors"
+                  onClick={() => sound.playClick(750)}
+                  className="px-6 py-3.5 rounded-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-sm border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-2"
                 >
-                  <PackageCheck className="w-4 h-4" />
-                  <span>LAUNCH TRACKER &rarr;</span>
+                  <PackageCheck className="w-4 h-4 text-blue-500" />
+                  Track Existing Order
                 </Link>
-                <Link
-                  href="/admin"
-                  onClick={() => sound.playClick(900)}
-                  className="font-mono text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
-                >
-                  DEPOT_SYS
-                </Link>
+              </div>
+
+              {/* Guarantees Row */}
+              <div className="pt-6 grid grid-cols-3 gap-4 border-t border-slate-200 dark:border-slate-800/80 text-xs">
+                <div className="flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span className="text-slate-600 dark:text-slate-300 font-medium">Free express shipping</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="text-slate-600 dark:text-slate-300 font-medium">2-Year global warranty</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <RotateCcw className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                  <span className="text-slate-600 dark:text-slate-300 font-medium">30-day hassle-free returns</span>
+                </div>
               </div>
             </div>
 
-            {/* Module 2: Secondary Hardware Spotlight */}
-            <div className="p-6 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-xl flex items-center gap-4 relative overflow-hidden group">
-              <img
-                src={products[2].images[0]} // Titanium Smartwatch
-                alt={products[2].title}
-                className="w-20 h-20 rounded-2xl object-cover bg-zinc-900 border border-zinc-800 shrink-0 group-hover:scale-105 transition-transform"
-              />
-              <div className="flex-1 min-w-0">
-                <span className="font-mono text-[9px] uppercase font-bold text-amber-400 block mb-0.5">
-                  SPOTLIGHT // 03
-                </span>
-                <h4 className="text-xs font-bold text-white truncate font-mono">
-                  {products[2].title}
-                </h4>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="font-mono text-sm font-bold text-white">
-                    ${products[2].price.toFixed(2)}
-                  </span>
+            {/* Right Hero Product Card */}
+            <div className="lg:col-span-5">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 luxury-shadow border border-slate-200/80 dark:border-slate-800 relative overflow-hidden group">
+                <div className="relative aspect-square max-h-72 mx-auto mb-6 flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950/60 rounded-2xl">
+                  <img
+                    src={flagshipProduct.images[0]}
+                    alt={flagshipProduct.title}
+                    className="max-h-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-md"
+                  />
+                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-900 text-white dark:bg-blue-600 text-[10px] font-bold uppercase tracking-wider">
+                    Editor&apos;s Pick
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400">
+                      {flagshipProduct.category}
+                    </span>
+                    <div className="flex items-center gap-1 text-xs text-amber-500 font-bold">
+                      <Star className="w-3.5 h-3.5 fill-current" />
+                      <span>{flagshipProduct.rating} / 5.0</span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                    {flagshipProduct.title}
+                  </h3>
+
+                  <div className="flex items-baseline gap-2 pt-2">
+                    <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                      ${flagshipProduct.price.toFixed(2)}
+                    </span>
+                    {flagshipProduct.comparePrice && (
+                      <span className="text-sm text-slate-400 line-through">
+                        ${flagshipProduct.comparePrice.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
                   <button
                     onClick={() => {
                       sound.playClick(750);
-                      setActiveModalProduct(products[2]);
+                      setActiveModalProduct(flagshipProduct);
                     }}
-                    className="font-mono text-[10px] px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors cursor-pointer"
+                    className="flex-1 py-3 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors text-center"
                   >
-                    INSPECT
+                    View Specs
+                  </button>
+
+                  <button
+                    onClick={handleFlagshipAdd}
+                    className={`flex-1 py-3 rounded-full font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-sm ${
+                      flagshipAdded
+                        ? 'bg-emerald-600 text-white scale-105'
+                        : 'bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white'
+                    }`}
+                  >
+                    {flagshipAdded ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Added to Bag</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4" />
+                        <span>Quick Order</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -341,94 +220,91 @@ export default function StorefrontPage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. TACTICAL FILTER & CONTROL MATRIX                                       */}
+      {/* 2. CATEGORY PILLS & SEARCH CONTROLS                                       */}
       {/* ========================================================================= */}
-      <section id="catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full">
-        <div className="bg-zinc-950/90 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-            {/* Category Segment Tabs with Scramble Effect */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategorySelect(cat.id)}
-                  className={`px-3.5 py-2 rounded-xl font-mono text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
-                    selectedCategory === cat.id
-                      ? 'bg-amber-500 text-zinc-950 shadow-md shadow-orange-500/20'
-                      : 'bg-zinc-900/90 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-zinc-800'
-                  }`}
-                >
-                  <span className="text-[10px] opacity-60">[{cat.code}]</span>
-                  <span>{cat.name}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Search & Sort Controls */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Search Bar */}
-              <div className="relative flex-1 sm:w-64 font-mono">
-                <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="FILTER_QUERY..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs text-white placeholder-zinc-500 outline-none transition-all"
-                />
-              </div>
-
-              {/* Sort Selector */}
-              <div className="relative font-mono">
-                <select
-                  value={sortBy}
-                  onChange={(e) => {
-                    sound.playClick(600);
-                    setSortBy(e.target.value as any);
-                  }}
-                  aria-label="Order sort mode"
-                  className="appearance-none bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl px-4 py-2 pr-8 text-xs font-bold text-zinc-300 outline-none cursor-pointer"
-                >
-                  <option value="featured">SORT: CURATED</option>
-                  <option value="price-asc">PRICE: ASCENDING</option>
-                  <option value="price-desc">PRICE: DESCENDING</option>
-                  <option value="rating">TOP_RATED</option>
-                </select>
-                <SlidersHorizontal className="w-3 h-3 text-zinc-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-
-              {/* Stock Filter Checkbox */}
-              <label className="flex items-center gap-2 font-mono text-xs text-zinc-400 cursor-pointer select-none bg-zinc-900 px-3 py-2 rounded-xl border border-zinc-800 hover:border-zinc-700">
-                <input
-                  type="checkbox"
-                  checked={inStockOnly}
-                  onChange={(e) => {
-                    sound.playClick(650);
-                    setInStockOnly(e.target.checked);
-                  }}
-                  className="rounded border-zinc-700 text-amber-500 focus:ring-amber-400 bg-zinc-950"
-                />
-                IN_STOCK
-              </label>
-            </div>
+      <section id="catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => handleCategorySelect(cat.id)}
+                className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+                  selectedCategory === cat.id
+                    ? 'bg-slate-900 text-white dark:bg-blue-600 shadow-md'
+                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
           </div>
 
-          {/* Results Metadata strip */}
-          <div className="flex items-center justify-between text-[11px] font-mono text-zinc-500 pt-2 border-t border-zinc-900">
-            <span>
-              CATALOG_COUNT: <strong className="text-zinc-200">{filteredProducts.length}</strong> ACTIVE_SKUS
-            </span>
-            <span className="hidden sm:inline">
-              PROMO_APPLIED: <strong className="text-amber-400">SAVE15</strong> (15% OFF AT CHECKOUT)
-            </span>
+          {/* Search, Sort, and In-Stock */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Search Input */}
+            <div className="relative flex-1 sm:w-64">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-full text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all shadow-sm"
+              />
+            </div>
+
+            {/* Sort Selector */}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  sound.playClick(600);
+                  setSortBy(e.target.value as any);
+                }}
+                aria-label="Sort products by"
+                className="appearance-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-600 rounded-full px-4 py-2.5 pr-8 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 outline-none cursor-pointer shadow-sm"
+              >
+                <option value="featured">Sort: Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="rating">Top Rated</option>
+              </select>
+              <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            {/* In-stock toggle */}
+            <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm">
+              <input
+                type="checkbox"
+                checked={inStockOnly}
+                onChange={(e) => {
+                  sound.playClick(650);
+                  setInStockOnly(e.target.checked);
+                }}
+                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+              In Stock Only
+            </label>
           </div>
         </div>
-      </section>
 
-      {/* ========================================================================= */}
-      {/* 3. PRODUCT CATALOG GRID WITH 3D TILT                                      */}
-      {/* ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+        {/* Counter Info */}
+        <div className="flex items-center justify-between text-xs text-slate-500 mb-6 font-medium">
+          <p>
+            Showing <strong className="text-slate-800 dark:text-slate-200">{filteredProducts.length}</strong> items
+            {selectedCategory !== 'all' && (
+              <span> in <strong className="capitalize text-blue-600 dark:text-blue-400">{selectedCategory}</strong></span>
+            )}
+            {searchQuery && <span> matching &ldquo;{searchQuery}&rdquo;</span>}
+          </p>
+          <p className="hidden sm:inline">
+            Coupon code <strong className="text-blue-600 dark:text-blue-400 font-mono">SAVE15</strong> gives 15% discount
+          </p>
+        </div>
+
+        {/* Products Grid */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
@@ -440,13 +316,13 @@ export default function StorefrontPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-zinc-950/60 rounded-3xl border border-zinc-800">
-            <Terminal className="w-10 h-10 mx-auto text-zinc-600 mb-3" />
-            <h3 className="font-mono text-base font-bold text-white mb-1">
-              NULL_SEARCH_RESULTS
+          <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 luxury-shadow">
+            <Search className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">
+              No matching products found
             </h3>
-            <p className="text-xs text-zinc-400 max-w-sm mx-auto mb-4 font-mono">
-              No hardware units matched your exact query parameter. Reset filters to restore default inventory.
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mb-6">
+              We couldn&apos;t find any hardware matching your filter criteria. Try resetting your search.
             </p>
             <button
               onClick={() => {
@@ -455,9 +331,9 @@ export default function StorefrontPage() {
                 setSearchQuery('');
                 setInStockOnly(false);
               }}
-              className="px-4 py-2 rounded-xl bg-amber-500 text-zinc-950 font-mono font-bold text-xs shadow-md cursor-pointer"
+              className="px-5 py-2.5 rounded-full bg-slate-900 text-white dark:bg-blue-600 font-bold text-xs shadow"
             >
-              RESTORE_ALL_FILTERS
+              Reset All Filters
             </button>
           </div>
         )}
@@ -467,13 +343,6 @@ export default function StorefrontPage() {
       <ProductDetailModal
         product={activeModalProduct}
         onClose={() => setActiveModalProduct(null)}
-      />
-
-      {/* Hardware Benchmark & Comparison Modal */}
-      <HardwareComparator
-        products={products}
-        isOpen={isComparatorOpen}
-        onClose={() => setIsComparatorOpen(false)}
       />
     </div>
   );
